@@ -6,7 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Keyboard, // 1. Import Keyboard
+  Keyboard,
 } from "react-native";
 
 interface SearchBarProps {
@@ -18,8 +18,9 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
   const handleSearch = () => {
     if (city.trim()) {
-      Keyboard.dismiss(); // 2. Dismiss the keyboard
       onSearch(city.trim());
+      setCity(""); // ✨ This line clears the input after search
+      Keyboard.dismiss();
     }
   };
 
