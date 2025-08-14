@@ -32,15 +32,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="locations"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="location" size={28} color={color}
-         />
-          ),
-        }}
-      />
     </Tabs>
   );
 }
