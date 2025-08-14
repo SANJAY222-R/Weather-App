@@ -6,12 +6,12 @@ import {
   ActivityIndicator,
   Text,
   StatusBar,
-  TouchableWithoutFeedback,
   Keyboard,
   Alert,
   Platform,
   KeyboardAvoidingView,
   TouchableOpacity,
+  ScrollView, // --- FIX: Import ScrollView ---
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import SearchBar from "@/components/SearchBar";
@@ -38,7 +38,7 @@ export default function TodayScreen() {
 
   const [initialFetchAttempted, setInitialFetchAttempted] = useState(false);
 
-  // --- EFFECT 1: Handles the initial data load when the app starts (No Changes) ---
+  // No changes to effects or handlers
   useEffect(() => {
     if (!locationLoading && !initialFetchAttempted) {
       if (location) {
@@ -55,23 +55,17 @@ export default function TodayScreen() {
     }
   }, [location, locationLoading, initialFetchAttempted, fetchDataByCoords, fetchDataForCity, locationError]);
 
-  // --- EFFECT 2: Handles API errors after a fetch attempt ---
   useEffect(() => {
     const isCoordLookupError = weatherError?.toLowerCase().includes("city not found");
     if (isCoordLookupError) {
-      // CHANGE: Removed the Alert.alert() call.
-      // Now, it will silently fetch the fallback city's weather without showing a popup.
       fetchDataForCity("Chennai");
       if (setError) {
-        setError(null); // Clear the error to prevent this from running again
+        setError(null);
       }
     }
   }, [weatherError, fetchDataForCity, setError]);
 
-  // --- CALLBACK: For the "current location" button ---
   const handleGetCurrentLocationWeather = useCallback(async () => {
-    // CHANGE: Wrapped the logic in a try/catch block for better error handling.
-    // The loading state is now handled by combining `locationLoading` and `weatherLoading`.
     try {
       const { location: newLocation, errorMsg: newError } = await refetchLocation();
 
@@ -90,13 +84,7 @@ export default function TodayScreen() {
     }
   }, [refetchLocation, fetchDataByCoords]);
 
-  // --- RENDER LOGIC ---
-
-  // A clear loading state for the very first time the app opens.
   const isInitialLoading = (locationLoading || weatherLoading) && !weatherData;
-
-  // CHANGE: Created a single, reliable loading state for the location button.
-  // This is true if we are getting the user's coordinates OR fetching weather data.
   const isButtonLoading = locationLoading || weatherLoading;
 
   const renderContent = () => {
@@ -127,42 +115,46 @@ export default function TodayScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
+      {/* --- FIX: Using "height" behavior can work better when the child is a ScrollView --- */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoidingContainer}
+        enabled
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View style={styles.innerContainer}>
-            <View style={styles.topBarContainer}>
-              <View style={styles.searchBarWrapper}>
-                <SearchBar onSearch={fetchDataForCity} />
-              </View>
-              {/* CHANGE: Updated the button's rendering logic for the loading state */}
-              <TouchableOpacity
-                onPress={handleGetCurrentLocationWeather}
-                style={styles.locationButton}
-                disabled={isButtonLoading} // Disable button during any loading phase
-              >
-                {/* Show a spinner if the location or weather is being fetched */}
-                {isButtonLoading && !!weatherData ? ( // Only show spinner if there is already data on screen
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <Ionicons name="navigate-circle-outline" size={36} color="#fff" />
-                )}
-              </TouchableOpacity>
+        {/* --- FIX: Replaced TouchableWithoutFeedback and View with ScrollView --- */}
+        <ScrollView
+          contentContainerStyle={styles.scrollContentContainer}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+          onScrollBeginDrag={Keyboard.dismiss} // Dismiss keyboard on scroll
+        >
+          <View style={styles.topBarContainer}>
+            <View style={styles.searchBarWrapper}>
+              <SearchBar onSearch={fetchDataForCity} />
             </View>
-
-            <View style={styles.weatherContent}>
-              {renderContent()}
-            </View>
+            <TouchableOpacity
+              onPress={handleGetCurrentLocationWeather}
+              style={styles.locationButton}
+              disabled={isButtonLoading}
+            >
+              {isButtonLoading && !!weatherData ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <Ionicons name="navigate-circle-outline" size={36} color="#fff" />
+              )}
+            </TouchableOpacity>
           </View>
-        </TouchableWithoutFeedback>
+
+          <View style={styles.weatherContent}>
+            {renderContent()}
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-// Styles (No Changes)
+// --- FIX: Style adjustments for ScrollView ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -171,8 +163,10 @@ const styles = StyleSheet.create({
   keyboardAvoidingContainer: {
     flex: 1,
   },
-  innerContainer: {
-    flex: 1,
+  // Replaced innerContainer with a style for the ScrollView's content
+  scrollContentContainer: {
+    flexGrow: 1, // Ensures the content can grow to fill the screen
+    justifyContent: 'center', // Helps vertically center content when it's short
     paddingHorizontal: 20,
     paddingTop: Platform.OS === "android" ? 25 : 10,
   },
@@ -195,7 +189,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   weatherContent: {
-    flex: 1,
+    // Removed flex: 1 as ScrollView handles the layout
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
@@ -219,12 +213,3 @@ const styles = StyleSheet.create({
     padding: 15,
   },
 });
-
-
-
-
-
-
-
-
-
