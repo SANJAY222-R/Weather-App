@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     maxWidth: 360,
-    marginTop: 30,
+    marginTop: 2,
   },
   cityName: {
     fontSize: 32,
