@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Sky-Timer",
-    "slug": "Sky-Timer",
+    "name": "SkyTimer",
+    "slug": "SkyTimer",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "Sky-Timer",
+    "scheme": "SkyTimer",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
