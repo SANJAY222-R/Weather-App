@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginTop: 20,
+    marginTop: 8,
     marginBottom: 50,
   },
   timerContainer: {

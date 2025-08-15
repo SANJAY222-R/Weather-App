@@ -15,21 +15,90 @@ import {
 } from 'react-native';
 import ClockCard from '@/components/ClockCard';
 import CurrentLocationClock from '@/components/CurrentLocationClock';
-import RemoveCityModal from '@/components/RemoveCityModal'; // Import the new modal
+import RemoveCityModal from '@/components/RemoveCityModal';
 
+// Expanded list of famous default cities
 const initialCities = [
-  { city: 'New York', timezone: 'America/New_York' },
-  { city: 'London', timezone: 'Europe/London' },
-  { city: 'Paris', timezone: 'Europe/Paris' },
-  { city: 'Tokyo', timezone: 'Asia/Tokyo' },
-  { city: 'Sydney', timezone: 'Australia/Sydney' },
-  { city: 'Dubai', timezone: 'Asia/Dubai' },
-  { city: 'Shanghai', timezone: 'Asia/Shanghai' },
-  { city: 'Los Angeles', timezone: 'America/Los_Angeles' },
-  { city: 'Moscow', timezone: 'Europe/Moscow' },
-  { city: 'Singapore', timezone: 'Asia/Singapore' },
-  { city: 'Chennai', timezone: 'Asia/Kolkata' },
+    { city: 'Mumbai', timezone: 'Asia/Kolkata' },
+    { city: 'New York', timezone: 'America/New_York' },
+    { city: 'London', timezone: 'Europe/London' },
+    { city: 'Tokyo', timezone: 'Asia/Tokyo' },
+    { city: 'Los Angeles', timezone: 'America/Los_Angeles' },
+    { city: 'Paris', timezone: 'Europe/Paris' },
+    { city: 'Sydney', timezone: 'Australia/Sydney' },
+    { city: 'Dubai', timezone: 'Asia/Dubai' },
 ];
+
+// Massively expanded lookup map for common cities and regions
+const cityTimezoneMap: { [key: string]: string } = {
+    // India
+    'mumbai': 'Asia/Kolkata',
+    'delhi': 'Asia/Kolkata',
+    'chennai': 'Asia/Kolkata',
+    'madurai': 'Asia/Kolkata',
+    'bangalore': 'Asia/Kolkata',
+    'bengaluru': 'Asia/Kolkata',
+    'kolkata': 'Asia/Kolkata',
+    'calcutta': 'Asia/Kolkata',
+    'hyderabad': 'Asia/Kolkata',
+    'pune': 'Asia/Kolkata',
+    'ahmedabad': 'Asia/Kolkata',
+    'jaipur': 'Asia/Kolkata',
+    // Americas
+    'chicago': 'America/Chicago',
+    'toronto': 'America/Toronto',
+    'vancouver': 'America/Vancouver',
+    'mexico city': 'America/Mexico_City',
+    'sao paulo': 'America/Sao_Paulo',
+    'buenos aires': 'America/Argentina/Buenos_Aires',
+    'lima': 'America/Lima',
+    'bogota': 'America/Bogota',
+    'santiago': 'America/Santiago',
+    'san francisco': 'America/Los_Angeles',
+    'miami': 'America/New_York',
+    'seattle': 'America/Los_Angeles',
+    'boston': 'America/New_York',
+    'washington dc': 'America/New_York',
+    'houston': 'America/Chicago',
+    'dallas': 'America/Chicago',
+    'alaska': 'America/Anchorage',
+    'hawaii': 'Pacific/Honolulu',
+    // Europe
+    'berlin': 'Europe/Berlin',
+    'paris': 'Europe/Paris',
+    'rome': 'Europe/Rome',
+    'madrid': 'Europe/Madrid',
+    'moscow': 'Europe/Moscow',
+    'istanbul': 'Europe/Istanbul',
+    'amsterdam': 'Europe/Amsterdam',
+    'zurich': 'Europe/Zurich',
+    'vienna': 'Europe/Vienna',
+    'athens': 'Europe/Athens',
+    'stockholm': 'Europe/Stockholm',
+    'dublin': 'Europe/Dublin',
+    // Asia & Middle East
+    'beijing': 'Asia/Shanghai',
+    'dubai': 'Asia/Dubai',
+    'singapore': 'Asia/Singapore',
+    'hong kong': 'Asia/Hong_Kong',
+    'seoul': 'Asia/Seoul',
+    'bangkok': 'Asia/Bangkok',
+    'jakarta': 'Asia/Jakarta',
+    'kuala lumpur': 'Asia/Kuala_Lumpur',
+    'manila': 'Asia/Manila',
+    'riyadh': 'Asia/Riyadh',
+    'tehran': 'Asia/Tehran',
+    'jerusalem': 'Asia/Jerusalem',
+    // Africa & Oceania
+    'cairo': 'Africa/Cairo',
+    'lagos': 'Africa/Lagos',
+    'johannesburg': 'Africa/Johannesburg',
+    'nairobi': 'Africa/Nairobi',
+    'casablanca': 'Africa/Casablanca',
+    'melbourne': 'Australia/Melbourne',
+    'auckland': 'Pacific/Auckland',
+    'perth': 'Australia/Perth',
+};
 
 export default function WorldClockScreen() {
   const [cities, setCities] = useState(initialCities);
@@ -38,30 +107,48 @@ export default function WorldClockScreen() {
   const [cityToRemove, setCityToRemove] = useState<{ city: string; timezone: string } | null>(null);
 
   const handleAddCity = async () => {
-    if (inputCity.trim() === '') {
-      Alert.alert('Input Required', 'Please enter a city name.');
-      return;
-    }
+    if (inputCity.trim() === '') return;
     Keyboard.dismiss();
+    const userInput = inputCity.trim();
+    const userInputLower = userInput.toLowerCase();
 
     try {
-      const formattedInput = inputCity.trim().replace(/ /g, '_');
-      const response = await fetch(`https://timeapi.io/api/TimeZone/AvailableTimeZones`);
-      if (!response.ok) throw new Error('Failed to fetch available timezones');
-      
-      const availableTimezones: string[] = await response.json();
-      const foundTimezone = availableTimezones.find(tz => tz.toLowerCase().includes(formattedInput.toLowerCase()));
+      let foundTimezone: string | undefined;
+      let displayCity = userInput;
+
+      // 1. Check our comprehensive custom lookup map first
+      if (cityTimezoneMap[userInputLower]) {
+          foundTimezone = cityTimezoneMap[userInputLower];
+      } else {
+        // 2. If not in the map, search the API
+        const formattedInput = userInput.replace(/ /g, '_');
+        const response = await fetch(`https://timeapi.io/api/TimeZone/AvailableTimeZones`);
+        if (!response.ok) throw new Error('Failed to fetch available timezones');
+        
+        const availableTimezones: string[] = await response.json();
+        
+        const directMatch = availableTimezones.find(tz => tz.toLowerCase() === formattedInput.toLowerCase());
+        if (directMatch) {
+            foundTimezone = directMatch;
+            displayCity = directMatch.split('/').pop()?.replace(/_/g, ' ') || userInput;
+        } else {
+            foundTimezone = availableTimezones.find(tz => tz.toLowerCase().includes(formattedInput.toLowerCase()));
+        }
+      }
 
       if (foundTimezone) {
-        if (!cities.some(c => c.timezone.toLowerCase() === foundTimezone.toLowerCase())) {
-          const newCity = { city: inputCity.trim(), timezone: foundTimezone };
+        if (!cities.some(c => c.city.toLowerCase() === displayCity.toLowerCase() && c.timezone.toLowerCase() === foundTimezone!.toLowerCase())) {
+          const newCity = { city: displayCity, timezone: foundTimezone };
           setCities(prevCities => [...prevCities, newCity]);
         } else {
-           Alert.alert('City Exists', `${inputCity.trim()} is already in your list.`);
+           Alert.alert('City Exists', `${displayCity} is already in your list.`);
         }
         setInputCity('');
       } else {
-        Alert.alert('Not Found', `Could not find a timezone for "${inputCity.trim()}".`);
+        Alert.alert(
+            'Not Found', 
+            `Could not find a timezone for "${userInput}". Please try another major city or a full timezone name (e.g., "Europe/London").`
+        );
       }
     } catch (error) {
       console.error('Failed to add city:', error);
@@ -77,7 +164,7 @@ export default function WorldClockScreen() {
   const confirmRemoveCity = () => {
     if (cityToRemove) {
       setCities(prevCities =>
-        prevCities.filter(city => city.timezone !== cityToRemove.timezone)
+        prevCities.filter(city => city.city !== cityToRemove.city || city.timezone !== cityToRemove.timezone)
       );
     }
     setModalVisible(false);
@@ -95,7 +182,7 @@ export default function WorldClockScreen() {
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="Add city or timezone..."
+              placeholder="Add any city or timezone..."
               placeholderTextColor="#888"
               value={inputCity}
               onChangeText={setInputCity}
@@ -108,7 +195,7 @@ export default function WorldClockScreen() {
 
           <FlatList
             data={cities}
-            keyExtractor={(item) => item.timezone}
+            keyExtractor={(item) => item.city + item.timezone} // More unique key
             renderItem={({ item }) => (
               <TouchableOpacity onLongPress={() => openRemoveModal(item)}>
                 <ClockCard city={item.city} timezone={item.timezone} />
