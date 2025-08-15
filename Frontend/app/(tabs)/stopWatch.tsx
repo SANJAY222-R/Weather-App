@@ -58,6 +58,7 @@ export default function StopWatchScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <View style={styles.content}>
+        <Text style={styles.title}>Stopwatch</Text>
         <View style={styles.timerContainer}>
           <AnalogStopwatch time={time} />
           <Text style={styles.timerText}>{formatTime(time)}</Text>
@@ -111,8 +112,15 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 + 20 : 20,
-    marginTop:70,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    paddingHorizontal: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginTop: 20,
+    marginBottom: 50,
   },
   timerContainer: {
     alignItems: 'center',
@@ -120,7 +128,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     height: 300, 
     width: 300,
-    marginBottom: 40,
+    marginBottom: 30,
   },
   timerText: {
     color: '#FFFFFF',
@@ -132,8 +140,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '80%',
-    marginBottom: 40,
+    width: '90%',
+    marginBottom: 30,
   },
   button: {
     width: 80,
@@ -163,7 +171,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333333',
   },
   lapsContainer: {
-    width: '80%',
+    width: '90%',
     flex: 1,
   },
   lapItem: {
