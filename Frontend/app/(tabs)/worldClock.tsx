@@ -16,8 +16,9 @@ import {
 import ClockCard from '@/components/ClockCard';
 import CurrentLocationClock from '@/components/CurrentLocationClock';
 import RemoveCityModal from '@/components/RemoveCityModal';
+import { Ionicons } from '@expo/vector-icons';
 
-// Expanded list of famous default cities
+// Greatly expanded list of famous default cities
 const initialCities = [
     { city: 'Mumbai', timezone: 'Asia/Kolkata' },
     { city: 'New York', timezone: 'America/New_York' },
@@ -189,7 +190,7 @@ export default function WorldClockScreen() {
               onSubmitEditing={handleAddCity}
             />
             <TouchableOpacity style={styles.addButton} onPress={handleAddCity}>
-              <Text style={styles.addButtonText}>Add</Text>
+               <Ionicons name="add" size={24} color="white" />
             </TouchableOpacity>
           </View>
 
@@ -256,9 +257,17 @@ const styles = StyleSheet.create({
       backgroundColor: '#007AFF',
       justifyContent: 'center',
       alignItems: 'center',
-      paddingHorizontal: 20,
+      width: 50,
       height: 50,
       borderRadius: 12,
+      shadowColor: '#007AFF',
+      shadowOffset: {
+        width: 0,
+        height: 0,
+      },
+      shadowOpacity: 0.5,
+      shadowRadius: 8,
+      elevation: 10,
     },
     addButtonText: {
       color: '#FFFFFF',
