@@ -7,18 +7,18 @@ interface ClockCardProps {
 }
 
 const ClockCard: React.FC<ClockCardProps> = ({ city, timezone }) => {
-  const [time, setTime] = useState<Date | null>(null);
+  const [timeData, setTimeData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTime = async () => {
       try {
-        const response = await fetch(`http://worldtimeapi.org/api/timezone/${timezone}`);
+        const response = await fetch(`https://timeapi.io/api/Time/current/zone?timeZone=${timezone}`);
         if (!response.ok) {
           throw new Error('Failed to fetch time');
         }
         const data = await response.json();
-        setTime(new Date(data.datetime));
+        setTimeData(data);
       } catch (error) {
         console.error(`Failed to fetch time for ${timezone}:`, error);
       } finally {
@@ -30,30 +30,30 @@ const ClockCard: React.FC<ClockCardProps> = ({ city, timezone }) => {
   }, [timezone]);
 
   useEffect(() => {
-    if (!time) return;
+    if (!timeData?.dateTime) return;
 
     const timer = setInterval(() => {
-      setTime(prevTime => {
-        if (prevTime) {
-          const newTime = new Date(prevTime);
-          newTime.setSeconds(newTime.getSeconds() + 1);
-          return newTime;
-        }
-        return null;
-      });
+        setTimeData((prevData: any) => {
+            const newDate = new Date(prevData.dateTime);
+            newDate.setSeconds(newDate.getSeconds() + 1);
+            return { ...prevData, dateTime: newDate.toISOString() };
+        });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [time]);
+  }, [timeData?.dateTime]);
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cityText}>{city}</Text>
-      {loading || !time ? (
+        <View>
+            <Text style={styles.cityText}>{city}</Text>
+            <Text style={styles.dayText}>{timeData ? timeData.dayOfWeek : ''}</Text>
+        </View>
+      {loading || !timeData ? (
         <ActivityIndicator color="#FFFFFF" />
       ) : (
         <Text style={styles.timeText}>
-          {time.toLocaleTimeString('en-US', {
+          {new Date(timeData.dateTime).toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
           })}
@@ -76,6 +76,11 @@ const styles = StyleSheet.create({
   cityText: {
     color: '#EAEAEA',
     fontSize: 18,
+  },
+  dayText: {
+    color: '#A0A0A0',
+    fontSize: 14,
+    marginTop: 4,
   },
   timeText: {
     color: '#FFFFFF',
