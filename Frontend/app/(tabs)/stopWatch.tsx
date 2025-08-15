@@ -59,15 +59,15 @@ export default function StopWatchScreen() {
       <StatusBar barStyle="light-content" />
       <View style={styles.content}>
         <Text style={styles.title}>Stopwatch</Text>
-        <View style={styles.timerContainer}>
-          <AnalogStopwatch time={time} />
-          <Text style={styles.timerText}>{formatTime(time)}</Text>
-        </View>
+        
+        <AnalogStopwatch time={time} />
+        <Text style={styles.timerText}>{formatTime(time)}</Text>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button, styles.resetButton]}
             onPress={handleLapReset}
+            activeOpacity={0.7}
           >
             <Text style={styles.buttonText}>
               {isRunning ? 'Lap' : 'Reset'}
@@ -79,6 +79,7 @@ export default function StopWatchScreen() {
               isRunning ? styles.stopButton : styles.startButton,
             ]}
             onPress={handleStartStop}
+            activeOpacity={0.7}
           >
             <Text
               style={[
@@ -91,14 +92,22 @@ export default function StopWatchScreen() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.lapsContainer}>
-          {laps.map((lap, index) => (
-            <View key={index} style={styles.lapItem}>
-              <Text style={styles.lapText}>Lap {laps.length - index}</Text>
-              <Text style={styles.lapText}>{formatTime(lap)}</Text>
-            </View>
-          ))}
-        </ScrollView>
+        <View style={styles.lapsWrapper}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {laps.length > 0 && (
+                <View style={styles.lapsHeader}>
+                  <Text style={styles.lapHeaderText}>Lap</Text>
+                  <Text style={styles.lapHeaderText}>Time</Text>
+                </View>
+            )}
+            {laps.map((lap, index) => (
+              <View key={index} style={styles.lapItem}>
+                <Text style={styles.lapText}>Lap {laps.length - index}</Text>
+                <Text style={styles.lapText}>{formatTime(lap)}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -107,72 +116,80 @@ export default function StopWatchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#131314',
+    backgroundColor: '#0D0D0D',
   },
   content: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginTop: 8,
-    marginBottom: 50,
-  },
-  timerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    height: 300, 
-    width: 300,
-    marginBottom: 30,
+    marginTop: 20,
+    marginBottom: 15, // Reduced margin
   },
   timerText: {
     color: '#FFFFFF',
-    fontSize: 56,
+    fontSize: 52, // Slightly smaller font
     fontWeight: '200',
     fontFamily: Platform.OS === 'ios' ? 'Helvetica Neue' : 'monospace',
-    position: 'absolute',
+    marginBottom: 25, // Reduced margin
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '90%',
-    marginBottom: 30,
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: 25, // Reduced margin
   },
   button: {
-    width: 80,
+    width: 80, // Slightly smaller buttons
     height: 80,
     borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#FFFFFF',
   },
   startButton: {
-    backgroundColor: 'rgba(51, 204, 102, 0.2)',
+    backgroundColor: 'rgba(46, 204, 113, 0.25)',
+    borderColor: '#2ECC71',
   },
   startButtonText: {
-    color: '#33CC66',
+    color: '#2ECC71',
   },
   stopButton: {
-    backgroundColor: 'rgba(255, 59, 48, 0.2)',
+    backgroundColor: 'rgba(231, 76, 60, 0.25)',
+    borderColor: '#E74C3C',
   },
   stopButtonText: {
-    color: '#FF3B30',
+    color: '#E74C3C',
   },
   resetButton: {
     backgroundColor: '#333333',
+    borderColor: '#555555',
   },
-  lapsContainer: {
-    width: '90%',
+  lapsWrapper: {
     flex: 1,
+    width: '100%',
+    borderTopWidth: 1,
+    borderTopColor: '#282828',
+    paddingTop: 10,
+  },
+  lapsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 10,
+    paddingHorizontal: 10,
+  },
+  lapHeaderText: {
+    color: '#A9A9A9',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   lapItem: {
     flexDirection: 'row',
@@ -180,9 +197,11 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#282828',
+    paddingHorizontal: 10,
   },
   lapText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
+    fontVariant: ['tabular-nums'],
   },
 });

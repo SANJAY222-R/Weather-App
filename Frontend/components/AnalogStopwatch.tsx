@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Circle, Line } from 'react-native-svg';
+import Svg, { Circle, Line, Text as SvgText } from 'react-native-svg';
 
-const DIAL_RADIUS = 150;
+const DIAL_RADIUS = 110; // Reduced from 150 to 110
 const DIAL_STROKE_WIDTH = 2;
 const HAND_LENGTH = DIAL_RADIUS - 10;
 const CENTER = DIAL_RADIUS;
@@ -13,7 +13,7 @@ interface AnalogStopwatchProps {
 
 const AnalogStopwatch: React.FC<AnalogStopwatchProps> = ({ time }) => {
   const seconds = time / 1000;
-  const angle = (seconds % 60) * 6; // 360 degrees / 60 seconds
+  const angle = (seconds % 60) * 6;
 
   const handX = CENTER + HAND_LENGTH * Math.sin((angle * Math.PI) / 180);
   const handY = CENTER - HAND_LENGTH * Math.cos((angle * Math.PI) / 180);
@@ -30,7 +30,7 @@ const AnalogStopwatch: React.FC<AnalogStopwatchProps> = ({ time }) => {
 
       ticks.push(
         <Line
-          key={i}
+          key={`tick-${i}`}
           x1={startX}
           y1={startY}
           x2={endX}
@@ -42,6 +42,32 @@ const AnalogStopwatch: React.FC<AnalogStopwatchProps> = ({ time }) => {
     }
     return ticks;
   };
+
+  const renderNumbers = () => {
+      const numbers = [];
+      for (let i = 1; i <= 12; i++) {
+        const angle = i * 30;
+        const text = (i * 5).toString();
+        const displayText = text === '60' ? '60' : text;
+        const numberX = CENTER + (DIAL_RADIUS - 22) * Math.sin((angle * Math.PI) / 180); // Adjusted position for smaller radius
+        const numberY = CENTER - (DIAL_RADIUS - 22) * Math.cos((angle * Math.PI) / 180); // Adjusted position
+
+        numbers.push(
+            <SvgText
+                key={`num-${i}`}
+                x={numberX}
+                y={numberY}
+                fontSize="14" // Reduced font size
+                fill="#A9A9A9"
+                textAnchor="middle"
+                alignmentBaseline="central"
+            >
+                {displayText}
+            </SvgText>
+        )
+      }
+      return numbers;
+  }
 
   return (
     <View style={styles.container}>
@@ -55,9 +81,8 @@ const AnalogStopwatch: React.FC<AnalogStopwatchProps> = ({ time }) => {
           fill="transparent"
         />
         {renderTicks()}
-        {/* Blue dot at the top */}
+        {renderNumbers()}
         <Circle cx={CENTER} cy={DIAL_STROKE_WIDTH + 5} r="3" fill="#007AFF" />
-        {/* Stopwatch Hand */}
         <Line
           x1={CENTER}
           y1={CENTER}
@@ -67,7 +92,6 @@ const AnalogStopwatch: React.FC<AnalogStopwatchProps> = ({ time }) => {
           strokeWidth="2"
           strokeLinecap="round"
         />
-        {/* Center circle */}
         <Circle cx={CENTER} cy={CENTER} r="4" fill="#007AFF" />
       </Svg>
     </View>
@@ -78,7 +102,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 15, // Reduced margin
   },
 });
 

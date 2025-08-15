@@ -11,7 +11,7 @@ import {
   Platform,
   KeyboardAvoidingView,
   TouchableOpacity,
-  ScrollView, // --- FIX: Import ScrollView ---
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import SearchBar from "@/components/SearchBar";
@@ -26,7 +26,6 @@ export default function TodayScreen() {
     error: weatherError,
     fetchDataForCity,
     fetchDataByCoords,
-    setError,
   } = useWeatherStore();
 
   const {
@@ -38,55 +37,65 @@ export default function TodayScreen() {
 
   const [initialFetchAttempted, setInitialFetchAttempted] = useState(false);
 
-  // No changes to effects or handlers
+  // Effect to fetch weather on initial load based on user location
   useEffect(() => {
     if (!locationLoading && !initialFetchAttempted) {
       if (location) {
         fetchDataByCoords(location.coords.latitude, location.coords.longitude);
       } else {
+        // Alert the user that location is unavailable, but do not fetch a default city.
         Alert.alert(
           "Location Unavailable",
-          locationError || "Could not access your location. Showing weather for Chennai as a fallback.",
+          locationError ||
+            "Could not access your location. Please search for a city manually.",
           [{ text: "OK" }]
         );
-        fetchDataForCity("Chennai");
       }
       setInitialFetchAttempted(true);
     }
-  }, [location, locationLoading, initialFetchAttempted, fetchDataByCoords, fetchDataForCity, locationError]);
+  }, [
+    location,
+    locationLoading,
+    initialFetchAttempted,
+    fetchDataByCoords,
+    locationError,
+  ]);
 
-  useEffect(() => {
-    const isCoordLookupError = weatherError?.toLowerCase().includes("city not found");
-    if (isCoordLookupError) {
-      fetchDataForCity("Chennai");
-      if (setError) {
-        setError(null);
-      }
-    }
-  }, [weatherError, fetchDataForCity, setError]);
-
+  // Callback to handle fetching weather for the current location via button press
   const handleGetCurrentLocationWeather = useCallback(async () => {
     try {
-      const { location: newLocation, errorMsg: newError } = await refetchLocation();
+      const { location: newLocation, errorMsg: newError } =
+        await refetchLocation();
 
       if (newLocation) {
-        fetchDataByCoords(newLocation.coords.latitude, newLocation.coords.longitude);
+        fetchDataByCoords(
+          newLocation.coords.latitude,
+          newLocation.coords.longitude
+        );
       } else {
         Alert.alert(
           "Location Error",
-          newError || "Failed to get your current location. Please ensure location services are enabled.",
+          newError ||
+            "Failed to get your current location. Please ensure location services are enabled.",
           [{ text: "OK" }]
         );
       }
     } catch (error) {
-        console.error("Failed to handle location weather fetch:", error);
-        Alert.alert("Error", "An unexpected error occurred while fetching your location.");
+      console.error("Failed to handle location weather fetch:", error);
+      Alert.alert(
+        "Error",
+        "An unexpected error occurred while fetching your location."
+      );
     }
   }, [refetchLocation, fetchDataByCoords]);
 
-  const isInitialLoading = (locationLoading || weatherLoading) && !weatherData;
+  const isInitialLoading =
+    (locationLoading || weatherLoading) &&
+    !weatherData &&
+    !initialFetchAttempted;
   const isButtonLoading = locationLoading || weatherLoading;
 
+  // Renders the main content based on the current state (loading, error, data, or initial)
   const renderContent = () => {
     if (isInitialLoading) {
       return (
@@ -105,9 +114,12 @@ export default function TodayScreen() {
       return <WeatherDisplay data={weatherData} />;
     }
 
+    // Default view prompting user for action
     return (
       <View style={styles.centered}>
-        <Text style={styles.infoText}>Search for a city or use the location button to get weather data.</Text>
+        <Text style={styles.infoText}>
+          Search for a city or use the location button to get weather data.
+        </Text>
       </View>
     );
   };
@@ -115,18 +127,16 @@ export default function TodayScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      {/* --- FIX: Using "height" behavior can work better when the child is a ScrollView --- */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoidingContainer}
         enabled
       >
-        {/* --- FIX: Replaced TouchableWithoutFeedback and View with ScrollView --- */}
         <ScrollView
           contentContainerStyle={styles.scrollContentContainer}
           keyboardShouldPersistTaps="handled"
           bounces={false}
-          onScrollBeginDrag={Keyboard.dismiss} // Dismiss keyboard on scroll
+          onScrollBeginDrag={Keyboard.dismiss}
         >
           <View style={styles.topBarContainer}>
             <View style={styles.searchBarWrapper}>
@@ -137,24 +147,25 @@ export default function TodayScreen() {
               style={styles.locationButton}
               disabled={isButtonLoading}
             >
-              {isButtonLoading && !!weatherData ? (
+              {isButtonLoading && weatherData ? (
                 <ActivityIndicator size="small" color="#FFF" />
               ) : (
-                <Ionicons name="navigate-circle-outline" size={36} color="#fff" />
+                <Ionicons
+                  name="navigate-circle-outline"
+                  size={36}
+                  color="#fff"
+                />
               )}
             </TouchableOpacity>
           </View>
 
-          <View style={styles.weatherContent}>
-            {renderContent()}
-          </View>
+          <View style={styles.weatherContent}>{renderContent()}</View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-// --- FIX: Style adjustments for ScrollView ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -163,33 +174,33 @@ const styles = StyleSheet.create({
   keyboardAvoidingContainer: {
     flex: 1,
   },
-  // Replaced innerContainer with a style for the ScrollView's content
   scrollContentContainer: {
-    flexGrow: 1, // Ensures the content can grow to fill the screen
-    justifyContent: 'center', // Helps vertically center content when it's short
+    flexGrow: 1,
+    justifyContent: "flex-start", // Align content to the top
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === "android" ? 25 : 10,
+    paddingTop: Platform.OS === "android" ? 40 : 20,
+    paddingBottom: 20,
   },
   topBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
   },
   searchBarWrapper: {
     flex: 1,
+    marginBottom: 35,
   },
   locationButton: {
     marginLeft: 10,
     height: 58,
     width: 58,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1E1F20',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#1E1F20",
     borderRadius: 15,
-    marginTop: 40,
   },
   weatherContent: {
-    // Removed flex: 1 as ScrollView handles the layout
+    flex: 1, // Allow this view to take up remaining space
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
@@ -204,7 +215,7 @@ const styles = StyleSheet.create({
     color: "#EAEAEA",
     marginTop: 10,
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   errorText: {
     color: "#ff4d4d",

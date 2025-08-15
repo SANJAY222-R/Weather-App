@@ -25,14 +25,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="forecast"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="calendar" size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="worldClock"
         options={{
           tabBarIcon: ({ color }) => (
