@@ -32,6 +32,22 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="worldClock"
+        options={{
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="time-outline" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="stopWatch"
+        options={{
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="stopwatch" size={28} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
