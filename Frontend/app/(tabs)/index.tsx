@@ -20,10 +20,10 @@ import { useWeatherStore } from "@/store/useWeatherStore";
 import { useUserLocation } from "@/hooks/useUserLocation";
 
 export default function TodayScreen() {
+  // ✅ REMOVED: weatherError is no longer needed here
   const {
     weatherData,
     loading: weatherLoading,
-    error: weatherError,
     fetchDataForCity,
     fetchDataByCoords,
   } = useWeatherStore();
@@ -37,13 +37,11 @@ export default function TodayScreen() {
 
   const [initialFetchAttempted, setInitialFetchAttempted] = useState(false);
 
-  // Effect to fetch weather on initial load based on user location
   useEffect(() => {
     if (!locationLoading && !initialFetchAttempted) {
       if (location) {
         fetchDataByCoords(location.coords.latitude, location.coords.longitude);
       } else {
-        // Alert the user that location is unavailable, but do not fetch a default city.
         Alert.alert(
           "Location Unavailable",
           locationError ||
@@ -61,7 +59,6 @@ export default function TodayScreen() {
     locationError,
   ]);
 
-  // Callback to handle fetching weather for the current location via button press
   const handleGetCurrentLocationWeather = useCallback(async () => {
     try {
       const { location: newLocation, errorMsg: newError } =
@@ -89,15 +86,12 @@ export default function TodayScreen() {
     }
   }, [refetchLocation, fetchDataByCoords]);
 
-  const isInitialLoading =
-    (locationLoading || weatherLoading) &&
-    !weatherData &&
-    !initialFetchAttempted;
+  // ✅ RENAMED: isInitialLoading to be more specific
+  const isFirstLoad = weatherLoading && !weatherData && !initialFetchAttempted;
   const isButtonLoading = locationLoading || weatherLoading;
 
-  // Renders the main content based on the current state (loading, error, data, or initial)
   const renderContent = () => {
-    if (isInitialLoading) {
+    if (isFirstLoad) {
       return (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#ffffff" />
@@ -106,15 +100,13 @@ export default function TodayScreen() {
       );
     }
 
-    if (weatherError && !weatherData) {
-      return <Text style={styles.errorText}>{weatherError}</Text>;
-    }
+    // ✅ REMOVED: The error display logic is no longer needed here
+    // if (weatherError && !weatherData) { ... }
 
     if (weatherData) {
       return <WeatherDisplay data={weatherData} />;
     }
 
-    // Default view prompting user for action
     return (
       <View style={styles.centered}>
         <Text style={styles.infoText}>
